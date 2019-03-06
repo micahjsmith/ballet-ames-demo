@@ -1,0 +1,39 @@
+project:
+  name: ballet-ames-demo
+  owner: micahjsmith
+  slug: ames
+
+problem:
+  problem_type: regression
+  problem_type_details:
+    scorer: neg_mean_squared_log_error
+    classification_type: 
+
+data:
+  s3_bucket: todo
+  s3_bucket_region: todo
+  train: data/raw
+  entities_table_name: entities
+  target_table_name: targets
+
+contrib:
+  module_name: ames.features.contrib
+  module_path: ames/features/contrib
+  comparison_remote: origin
+  comparison_ref: master
+
+tables:
+  -
+    name: entities
+    path: entities.csv
+    pd_read_kwargs:
+      index_col:
+      - todo
+      header: 0
+  -
+    name: targets
+    path: targets.csv
+    pd_read_kwargs:
+      index_col:
+      - todo
+      header: 0
