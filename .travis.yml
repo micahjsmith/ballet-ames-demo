@@ -18,6 +18,7 @@ matrix:
       env: BALLET_TEST_TYPE=feature_pruning_evaluation
 
 install:
+  - pip install --upgrade 'pip>=18.1'
   - make install
 
 script:
