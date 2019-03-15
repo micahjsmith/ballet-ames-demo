@@ -14,5 +14,5 @@ setup(
     install_requires=requirements,
     name='ballet-ames-demo',
     packages=find_packages(include=['ames', 'ames.*']),
-    url='https://github.com/micahjsmith/ames',
+    url='https://github.com/micahjsmith/ballet-ames-demo',
 )
