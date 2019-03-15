@@ -26,7 +26,7 @@ def load_data(input_dir=None):
         y = load_table_from_config(input_dir, targets_config)
     else:
         source = 'https://s3.amazonaws.com/mit-dai-ballet/ames/AmesHousing.txt'
-        df = pd.read_table(source)
+        df = pd.read_csv(source, sep='\t')
         X = df.drop('SalePrice', axis=1)
         y = df['SalePrice']
 
