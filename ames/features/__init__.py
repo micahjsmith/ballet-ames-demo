@@ -4,9 +4,11 @@ import ballet
 import ballet.contrib
 import ballet.util.mod
 import click
-from ballet.eng.misc import IdentityTransformer
+import numpy as np
+from ballet.feature import DelegatingRobustTransformer
 from ballet.util.io import save_features, save_targets
 from ballet.util.log import stacklog
+from sklearn.preprocessing import FunctionTransformer
 
 import ames
 from ames.load_data import load_data
@@ -30,7 +32,8 @@ def get_target_encoder():
     Returns:
         transformer-like
     """
-    return IdentityTransformer()
+    return DelegatingRobustTransformer(
+        FunctionTransformer(func=np.log, inverse_func=np.exp))
 
 
 @stacklog(logger.info, 'Building features and target')
@@ -51,11 +54,8 @@ def build(X_df=None, y_df=None):
 
     features = get_contrib_features()
     mapper_X = ballet.feature.make_mapper(features)
-    if features:
-        X = mapper_X.fit_transform(X_df)
-    else:
-        X = None
-
+    X = mapper_X.fit_transform(X_df)
+    
     encoder_y = get_target_encoder()
     y = encoder_y.fit_transform(y_df)
 
