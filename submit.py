@@ -40,7 +40,7 @@ def create_and_switch_to_new_branch(repo, user, feature):
 
 @stacklog(print, 'Creating subdirectories of contrib')
 def create_dirs_if_needed(dst):
-    dst = pathlib.path(dst)
+    dst = pathlib.Path(dst)
     dst.parent.mkdir(parents=True, exist_ok=True)
 
 
