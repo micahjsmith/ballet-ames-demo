@@ -201,7 +201,7 @@ def submit(user, feature, from_, dry_run, github_token):
     read_format_write(src, dst)
     add_init_if_needed(dst)
     commit_changes(repo)
-    push_changes(repo, user, feature)
+    push_changes(repo, user, feature, dry_run=dry_run)
     gh = _make_github_client(github_token)
 
     pr = create_pull_request(gh, project, user, feature, dry_run=dry_run)
