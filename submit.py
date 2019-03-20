@@ -34,8 +34,9 @@ def _check_environment(repo):
 @stacklog(print, 'Creating and switching to new branch')
 def create_and_switch_to_new_branch(repo, user, feature):
     name = _make_branch_name(user, feature)
-    if name not in repo.branches:
-        repo.create_head(name)
+    if name in repo.branches:
+        repo.delete_head('-D', name)
+    repo.create_head(name)
     repo.branches[name].checkout()
 
 
@@ -95,7 +96,7 @@ def push_changes(repo, user, feature, dry_run=False):
         origin.push(refspec)
     else:
         print(
-            '[dry run] would execute \'origin.push({refspec})\''
+            '[dry run] would execute \'origin.push({refspec!r})\''
             .format(refspec=refspec))
 
 
@@ -121,7 +122,7 @@ def create_pull_request(gh, project, user, feature, dry_run=False):
     title = 'Propose new feature'
     body = dedent('''\
     Propose new feature: feature_{feature:02d}.py
-    Submitted by user: user_{user:02d}.py
+    Submitted by user: user_{user:02d}
     
     Pull request automatically created by {script_name}
     ''').format(user=user, feature=feature, script_name='submit.py')
@@ -138,8 +139,9 @@ def create_pull_request(gh, project, user, feature, dry_run=False):
         pr = Mock()
         print(
             '[dry run] would execute '
-            '\'ghrepo.create_pull(title={title}, body={body}, base={base}, '
-            'head={head}, maintainer_can_modify={maintainer_can_modify})\''
+            '\'ghrepo.create_pull(title={title!r}, body={body!r}, '
+            'base={base!r}, '
+            'head={head!r}, maintainer_can_modify={maintainer_can_modify!r})\''
             .format(title=title, body=body, base=base, head=head,
                     maintainer_can_modify=maintainer_can_modify)
         )
@@ -171,7 +173,10 @@ def create_pull_request(gh, project, user, feature, dry_run=False):
               type=click.STRING,
               default=None,
               help='github access token to authorize pull request')
-def submit(user, feature, from_, dry_run, github_token):
+@click.option('--cleanup/--no-cleanup',
+              default=True,
+              help='cleanup most changes to the project on exit')
+def submit(user, feature, from_, dry_run, github_token, cleanup):
     """Submit feature within path to project"""
     project = _get_project()
     repo = project.repo
@@ -185,15 +190,16 @@ def submit(user, feature, from_, dry_run, github_token):
                        'feature_{feature:02d}.py'.format(feature=feature))
 
     # register cleanup
-    @atexit.register
-    @funcy.silent
-    def cleanup():
-        # check out default branch
-        repo.branches[ballet.update.DEFAULT_BRANCH].checkout()
+    if cleanup:
+        @atexit.register
+        @funcy.silent
+        def cleanup():
+            # check out default branch
+            repo.branches[ballet.update.DEFAULT_BRANCH].checkout()
 
-        # delete new branch
-        name = _make_branch_name(user, feature)
-        repo.delete_head(name)
+            # delete new branch
+            name = _make_branch_name(user, feature)
+            repo.delete_head(name)
 
     _check_environment(repo)
     create_and_switch_to_new_branch(repo, user, feature)
