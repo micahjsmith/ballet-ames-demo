@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from textwrap import dedent
+from unittest.mock import Mock
 
 import ballet
 import ballet.project
@@ -61,10 +62,16 @@ def commit_changes(repo):
 
 
 @stacklog(print, 'Pushing changes')
-def push_changes(repo, user, feature):
+def push_changes(repo, user, feature, dry_run=False):
     branch_name = _make_branch_name(user, feature)
     origin = repo.remote('origin')
-    origin.push('{branch}:{branch}'.format(branch=branch_name))
+    refspec = '{branch}:{branch}'.format(branch=branch_name)
+    if not dry_run:
+        origin.push(refspec)
+    else:
+        print(
+            '[dry run] would execute \'origin.push({refspec})\''
+            .format(refspec=refspec))
 
 
 def _make_github_client(token):
@@ -79,7 +86,7 @@ def _make_github_client(token):
 
 
 @stacklog(print, 'Creating pull request')
-def create_pull_request(gh, project, user, feature):
+def create_pull_request(gh, project, user, feature, dry_run=False):
     branch_name = _make_branch_name(user, feature)
     owner = project.get('project', 'owner')
     name = project.get('project', 'name')
@@ -98,9 +105,19 @@ def create_pull_request(gh, project, user, feature):
     maintainer_can_modify = True
 
     # create the pull
-    pr = ghrepo.create_pull(
-        title=title, body=body, base=base, head=head,
-        maintainer_can_modify=maintainer_can_modify)
+    if not dry_run:
+        pr = ghrepo.create_pull(
+            title=title, body=body, base=base, head=head,
+            maintainer_can_modify=maintainer_can_modify)
+    else:
+        pr = Mock()
+        print(
+            '[dry run] would execute '
+            '\'ghrepo.create_pull(title={title}, body={body}, base={base}, '
+            'head={head}, maintainer_can_modify={maintainer_can_modify})\''
+            .format(title=title, body=body, base=base, head=head,
+                    maintainer_can_modify=maintainer_can_modify)
+        )
 
     return pr
 
@@ -121,11 +138,15 @@ def create_pull_request(gh, project, user, feature):
                               readable=True,
                               resolve_path=True),
               help='root directory of existing features')
+@click.option('-n', '--dry-run',
+              is_flag=True,
+              default=False,
+              help='dry run (do not actually push to remote or create PR)')
 @click.option('--github-token',
               type=click.STRING,
               default=None,
               help='github access token to authorize pull request')
-def submit(user, feature, from_, github_token):
+def submit(user, feature, from_, dry_run, github_token):
     """Submit feature within path to project"""
     project = ballet.project.Project(ames)
     repo = project.repo
@@ -147,7 +168,7 @@ def submit(user, feature, from_, github_token):
     push_changes(repo, user, feature)
     gh = _make_github_client(github_token)
 
-    pr = create_pull_request(gh, project, user, feature)
+    pr = create_pull_request(gh, project, user, feature, dry_run=dry_run)
     print('Created pull request: {pr.url}'.format(pr=pr))
 
     print('Submission successful.')
