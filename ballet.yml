@@ -2,6 +2,7 @@ project:
   name: ballet-ames-demo
   owner: micahjsmith
   slug: ames
+  remote: origin
 
 problem:
   problem_type: regression
@@ -12,8 +13,6 @@ problem:
 contrib:
   module_name: ames.features.contrib
   module_path: ames/features/contrib
-  comparison_remote: origin
-  comparison_ref: master
 
 data:
   s3_bucket: todo
