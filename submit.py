@@ -173,10 +173,13 @@ def create_pull_request(gh, project, user, feature, dry_run=False):
               type=click.STRING,
               default=None,
               help='github access token to authorize pull request')
+@click.option('--create-pull/--no-create-pull',
+              default=True,
+              help='create pull request on github')
 @click.option('--cleanup/--no-cleanup',
               default=True,
               help='cleanup most changes to the project on exit')
-def submit(user, feature, from_, dry_run, github_token, cleanup):
+def submit(user, feature, from_, dry_run, github_token, create_pull, cleanup):
     """Submit feature within path to project"""
     project = _get_project()
     repo = project.repo
@@ -210,8 +213,9 @@ def submit(user, feature, from_, dry_run, github_token, cleanup):
     push_changes(repo, user, feature, dry_run=dry_run)
     gh = _make_github_client(github_token)
 
-    pr = create_pull_request(gh, project, user, feature, dry_run=dry_run)
-    print('Created pull request: {pr.url}'.format(pr=pr))
+    if create_pull:
+        pr = create_pull_request(gh, project, user, feature, dry_run=dry_run)
+        print('Created pull request: {pr.url}'.format(pr=pr))
 
     print('Submission successful.')
 
