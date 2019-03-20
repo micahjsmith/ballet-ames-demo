@@ -28,7 +28,8 @@ def _check_environment(repo):
 @stacklog(print, 'Creating and switching to new branch')
 def create_and_switch_to_new_branch(repo, user, feature):
     name = _make_branch_name(user, feature)
-    repo.create_head(name)
+    if name not in repo.branches:
+        repo.create_head(name)
     repo.branches[name].checkout()
 
 
