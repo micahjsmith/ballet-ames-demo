@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import atexit
 from textwrap import dedent
 from unittest.mock import Mock
 
@@ -8,11 +9,15 @@ import ballet.project
 import ballet.update
 import black
 import click
+import funcy
 import github
 from ballet.compat import pathlib
 from ballet.util.log import stacklog
 
-import ames
+
+def _get_project():
+    import ames
+    return ballet.project.Project(ames)
 
 
 def _make_branch_name(user, feature):
@@ -149,7 +154,7 @@ def create_pull_request(gh, project, user, feature, dry_run=False):
               help='github access token to authorize pull request')
 def submit(user, feature, from_, dry_run, github_token):
     """Submit feature within path to project"""
-    project = ballet.project.Project(ames)
+    project = _get_project()
     repo = project.repo
     to = project.get('contrib', 'module_path')
 
@@ -159,6 +164,17 @@ def submit(user, feature, from_, dry_run, github_token):
     dst = pathlib.Path(to,
                        'user_{user:02d}'.format(user=user),
                        'feature_{feature:02d}.py'.format(feature=feature))
+
+    # register cleanup
+    @atexit.register
+    @funcy.silent
+    def cleanup():
+        # check out default branch
+        repo.branches[ballet.update.DEFAULT_BRANCH].checkout()
+
+        # delete new branch
+        name = _make_branch_name(user, feature)
+        repo.delete_head(name)
 
     _check_environment(repo)
     create_and_switch_to_new_branch(repo, user, feature)
