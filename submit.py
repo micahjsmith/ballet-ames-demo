@@ -48,7 +48,8 @@ def create_dirs_if_needed(dst):
 def read_format_write(src, dst):
     with src.open('r') as f:
         code = f.read()
-    code = black.format_file_contents(code)
+
+    code = black.format_file_contents(code, fast=False, mode=black.FileMode)
 
     with dst.open('w') as f:
         f.write(code)
