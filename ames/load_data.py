@@ -8,11 +8,12 @@ from ames import conf
 def load_data(input_dir=None):
     """Loads the Ames Housing dataset
 
-    Source:
+    Source::
 
         Decock, Dean. "Ames, Iowa: Alternative to the Boston Housing Data as an
         End of Semester Regression Project."
         <https://ww2.amstat.org/publications/jse/v19n3/decock.pdf>
+        <https://s3.amazonaws.com/mit-dai-ballet/ames/DataDocumentation.txt >
     """
     if input_dir is not None:
         tables = conf.get('tables')
