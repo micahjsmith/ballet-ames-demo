@@ -13,6 +13,9 @@ import click
 import funcy
 import github
 from ballet.compat import pathlib
+from ballet.exc import BalletError
+from ballet.util import one_or_raise
+from ballet.util.git import did_git_push_succeed
 from ballet.util.log import stacklog
 
 
@@ -93,7 +96,11 @@ def push_changes(repo, user, feature, dry_run=False):
     origin = repo.remote('origin')
     refspec = '{branch}:{branch}'.format(branch=branch_name)
     if not dry_run:
-        origin.push(refspec)
+        result = origin.push(refspec)
+        push_info = one_or_raise(result)
+        if not did_git_push_succeed(push_info):
+            raise BalletError('Git push failed, '
+                              'maybe you need to delete a branch on remote?')
     else:
         print(
             '[dry run] would execute \'origin.push({refspec!r})\''
