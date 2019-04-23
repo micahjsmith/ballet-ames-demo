@@ -6,7 +6,7 @@ input = ["Year Built", "Garage Yr Blt"]
 
 
 def calc_age(df):
-    return df["Year Built"].where(pd.isnull, df["Garage Yr Blt"])
+    return df["Year Built"].where(pd.notnull, df["Garage Yr Blt"])
 
 
 transformer = SimpleFunctionTransformer(calc_age)
