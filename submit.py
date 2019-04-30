@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 
 import atexit
-import platform
 from textwrap import dedent
 from unittest.mock import Mock
 
 import ballet
 import ballet.project
 import ballet.update
-import black
 import click
 import funcy
 import github
 from ballet.compat import pathlib
 from ballet.exc import BalletError
 from ballet.util import one_or_raise
+from ballet.util.code import blacken_code
 from ballet.util.git import did_git_push_succeed
 from ballet.util.log import stacklog
 
@@ -49,29 +48,12 @@ def create_dirs_if_needed(dst):
     dst.parent.mkdir(parents=True, exist_ok=True)
 
 
-def _blacken_code(code):
-    major, minor, _ = platform.python_version_tuple()
-    pyversion = 'py{major}{minor}'.format(major=major, minor=minor)
-    target_versions = [black.TargetVersion[pyversion.upper()]]
-
-    line_length = black.DEFAULT_LINE_LENGTH
-    string_normalization = True
-
-    mode = black.FileMode(
-        target_versions=target_versions,
-        line_length=line_length,
-        string_normalization=string_normalization,
-    )
-
-    return black.format_file_contents(code, fast=False, mode=mode)
-
-
 @stacklog(print, 'Reformatting and writing feature')
 def read_format_write(src, dst):
     with src.open('r') as f:
         code = f.read()
 
-    code = _blacken_code(code)
+    code = blacken_code(code)
 
     with dst.open('w') as f:
         f.write(code)
