@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 requirements = [
-    'ballet>=0.5.1',
+    'ballet @ git+https://git@github.com/HDI-Project/ballet@master',
     'Click>=6.0',
 ]
 
@@ -14,5 +14,5 @@ setup(
     install_requires=requirements,
     name='ballet-ames-demo',
     packages=find_packages(include=['ames', 'ames.*']),
-    url='https://github.com/micahjsmith/ames',
+    url='https://github.com/micahjsmith/ballet-ames-demo',
 )

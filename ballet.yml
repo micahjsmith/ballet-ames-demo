@@ -36,8 +36,3 @@ tables:
       index_col: 0
       header: 0
       sep: ","
-
-github:
-  pruning_action: commit_to_master
-  close_irrelevant_features: no
-  accept_passing_features: no
